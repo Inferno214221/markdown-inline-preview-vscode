@@ -59,9 +59,9 @@ export class Decorator {
     defaultColorRanges.push(...this.getRanges(documentText, hRegex));
     this.activeEditor.setDecorations(this.defaultColorDecorationType, defaultColorRanges);
 
-    this.activeEditor.setDecorations(this.xxlTextDecorationType, this.getRanges(documentText, h1Regex));
-    this.activeEditor.setDecorations(this.xlTextDecorationType, this.getRanges(documentText, h2Regex));
-    this.activeEditor.setDecorations(this.lTextDecorationType, this.getRanges(documentText, h3Regex));
+    this.activeEditor.setDecorations(this.xxlTextDecorationType, this.getUnselectedRanges(documentText, h1Regex));
+    this.activeEditor.setDecorations(this.xlTextDecorationType, this.getUnselectedRanges(documentText, h2Regex));
+    this.activeEditor.setDecorations(this.lTextDecorationType, this.getUnselectedRanges(documentText, h3Regex));
   }
 
   isRangeSelected(range: Range): boolean {
@@ -135,6 +135,27 @@ export class Decorator {
 
       const startPosition = this.activeEditor.document.positionAt(match.index);
       const endPosition = this.activeEditor.document.positionAt(match.index + group.length);
+      ranges.push(
+        new Range(startPosition, endPosition),
+      );
+    }
+    return ranges;
+  }
+
+  getUnselectedRanges(documentText: string, regex: RegExp) {
+    if (!this.activeEditor) return [];
+
+    let match;
+    const ranges = [];
+    while ((match = regex.exec(documentText))) {
+      const group = match[0];
+
+      const startPosition = this.activeEditor.document.positionAt(match.index);
+      const endPosition = this.activeEditor.document.positionAt(match.index + group.length);
+      const fullRange = new Range(startPosition, endPosition);
+      if (this.isLineOfRangeSelected(fullRange)) {
+        continue;
+      }
       ranges.push(
         new Range(startPosition, endPosition),
       );
